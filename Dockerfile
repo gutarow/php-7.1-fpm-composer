@@ -24,6 +24,18 @@ RUN docker-php-ext-install pdo pdo_mysql xsl pdo_pgsql
 RUN docker-php-ext-install phar
 RUN docker-php-ext-install intl
 
+RUN mkdir /opt/oracle \
+    && curl 'https://download.oracle.com/otn_software/linux/instantclient/19600/instantclient-basic-linux.x64-19.6.0.0.0dbru.zip' --output /opt/oracle/instantclient-basic-linux.zip \
+    && curl 'https://download.oracle.com/otn_software/linux/instantclient/19600/instantclient-sdk-linux.x64-19.6.0.0.0dbru.zip' --output /opt/oracle/instantclient-sdk-linux.zip \
+    && unzip '/opt/oracle/instantclient-basic-linux.zip' -d /opt/oracle \
+    && unzip '/opt/oracle/instantclient-sdk-linux.zip' -d /opt/oracle \
+    && rm /opt/oracle/instantclient-*.zip \
+    && mv /opt/oracle/instantclient_* /opt/oracle/instantclient \
+    && docker-php-ext-configure oci8 --with-oci8=instantclient,/opt/oracle/instantclient \
+    && docker-php-ext-install oci8 \
+    && echo /opt/oracle/instantclient/ > /etc/ld.so.conf.d/oracle-insantclient.conf \
+    && ldconfig
+
 RUN a2enmod  rewrite \
     && a2enmod deflate \
     && a2enmod headers \
